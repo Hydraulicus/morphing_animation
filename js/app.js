@@ -157,4 +157,67 @@ function animate(newtime) {
   }
 }
 
+async function main() {
+  const canvas = document.querySelector('canvas');
+  const canvasContext = canvas.getContext('2d');
+  const canvasAspectRatio = canvas.width / canvas.height;
+
+  const video = document.createElement('video');
+  video.muted = true;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsinline = true;
+  video.src = "img/video.webm";
+
+  const maskSVG = document.getElementById("mask")
+  const maskImage = document.createElement('img');
+  const XML = new XMLSerializer().serializeToString(maskSVG);
+
+  const SVG64 = btoa(XML);
+
+
+  maskImage.src = URL.createObjectURL(new Blob([XML], {type: 'image/svg+xml'}));
+
+
+
+  // maskImage.src = URL.createObjectURL(new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432"><path fill="#fff" d="M364 318l35 4-21-29-24-2-4-2 19-5a4 4 0 00-2-9l-27 7-33-19 7-2 24 14a4 4 0 104-7l-16-10 4-1 24 4 28-22-35-6-20 16-3 1 9-17a4 4 0 10-7-4l-14 24-16 4-64-37h33l20 20a4 4 0 106-6l-14-14h4l23 10 32-14-32-14-23 10h-4l14-14a4 4 0 10-6-6l-20 20h-33l64-37 16 4 14 24a4 4 0 107-4l-9-17 3 1 20 16 35-6-28-22-24 4-4-1 16-10a4 4 0 00-4-7l-24 13-7-1 33-19 27 7a4 4 0 102-9l-19-5 4-2 24-2 21-29-35 4-15 20-3 2 5-18a4 4 0 10-8-3l-8 27-32 19 1-7 24-14a4 4 0 00-4-8l-16 10 1-4 15-19-5-35-23 28 4 24-1 4-9-17a4 4 0 10-8 5l14 24-4 15-64 37 16-28 27-7a4 4 0 00-2-9l-19 5 2-3 20-15 4-35-29 21-2 24-2 4-5-19a4 4 0 10-8 3l7 26-17 29v-74l12-12h27a4 4 0 000-8h-19l3-3 23-9 13-33-33 13-9 23-3 3V81a4 4 0 10-8 0v27l-6 6V76l20-20a4 4 0 10-6-6l-14 13v-4l10-22-14-33-14 33 10 22v4l-14-13a4 4 0 10-6 6l20 20v38l-6-6V81a4 4 0 00-8 0v19l-3-3-9-23-33-13 13 33 23 9 3 3h-19a4 4 0 000 8h27l12 12v74l-17-29 7-26a4 4 0 00-8-3l-5 19-2-4-2-24-29-21 4 35 20 15 2 3-19-5a4 4 0 10-2 9l27 7 16 28-64-37-4-15 14-24a4 4 0 00-8-5l-9 17-1-4 4-24-23-28-5 35 15 19 1 4-16-10a4 4 0 10-4 8l24 14 1 7-32-19-8-27a4 4 0 10-8 3l5 18-3-2-15-20-35-4 21 29 24 2 4 2-19 5a4 4 0 002 9l27-7 33 19-7 1-24-13a4 4 0 10-4 7l16 10-4 1-24-4-28 22 35 6 20-16 3-1-9 17a4 4 0 107 4l14-24 16-4 64 37h-33l-20-20a4 4 0 10-6 6l14 14h-4l-23-10-32 14 32 14 23-10h4l-14 14a4 4 0 106 6l20-20h33l-64 37-16-4-14-24a4 4 0 00-7 4l9 17-3-1-20-16-35 6 28 22 24-4 4 1-16 10a4 4 0 004 7l24-14 7 2-33 19-27-7a4 4 0 00-2 9l19 5-4 2-24 2-21 29 35-4 15-20 3-2-5 18a4 4 0 008 3l8-27 32-19-1 7-24 14a4 4 0 004 8l16-10-1 4-15 19 5 35 23-28-4-24 1-4 9 17a4 4 0 008-5l-14-24 4-15 64-37-16 28-27 7a4 4 0 102 9l19-5-2 3-20 15-4 35 29-21 2-24 2-4 5 19a4 4 0 108-3l-7-26 17-29v74l-12 12h-27a4 4 0 100 8h19l-3 3-23 9-13 33 33-13 9-23 3-3v19a4 4 0 008 0v-27l6-6v38l-20 20a4 4 0 006 6l14-13v4l-10 22 14 33 14-33-10-22v-4l14 13a4 4 0 006-6l-20-20v-38l6 6v27a4 4 0 008 0v-19l3 3 9 23 33 13-13-33-23-9-3-3h19a4 4 0 000-8h-27l-12-12v-74l17 29-7 26a4 4 0 008 3l5-19 2 4 2 24 29 21-4-35-20-15-2-3 19 5a4 4 0 102-9l-27-7-16-28 64 37 4 15-14 24a4 4 0 108 5l9-17 1 4-4 24 23 28 5-35-15-19-1-4 16 10a4 4 0 004-8l-24-14-1-7 32 19 8 27a4 4 0 108-3l-5-18 3 2 15 20z"/></svg>`], {type: 'image/svg+xml'}));
+  //
+  // console.log(' maskSVG=',  typeof maskSVG, maskSVG)
+  // console.log('maskImage=', typeof maskImage, maskImage)
+
+  await Promise.all([
+    video.play(),
+    new Promise((resolve) => maskImage.addEventListener('load', resolve, {once: true})),
+  ]);
+
+  const videoAspectRatio = video.videoWidth / video.videoHeight;
+
+  const [frameWidth, frameHeight] =
+    canvasAspectRatio <= videoAspectRatio
+      ? [canvas.height * videoAspectRatio, canvas.height]
+      : [canvas.width, canvas.width / videoAspectRatio];
+
+  const [frameTop, frameLeft] = [(canvas.height - frameHeight) / 2, (canvas.width - frameWidth) / 2];
+
+  const maskAspectRatio = maskImage.naturalWidth / maskImage.naturalHeight;
+
+  const [maskWidth, maskHeight] =
+    canvasAspectRatio <= maskAspectRatio
+      ? [canvas.width, canvas.width / maskAspectRatio]
+      : [canvas.height * maskAspectRatio, canvas.height];
+
+  const [maskTop, maskLeft] = [(canvas.height - maskHeight) / 2, (canvas.width - maskWidth) / 2];
+
+  requestAnimationFrame(function frame() {
+    canvasContext.globalCompositeOperation = 'destination-over';
+    canvasContext.drawImage(maskImage, maskLeft, maskTop, maskWidth, maskHeight);
+
+    canvasContext.globalCompositeOperation = 'source-in';
+    canvasContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, frameLeft, frameTop, frameWidth, frameHeight);
+
+    requestAnimationFrame(frame);
+  });
+}
+
 init({contours})
+setTimeout(() => main(), 1200)
