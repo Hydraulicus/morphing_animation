@@ -18,7 +18,7 @@ const contours = {
   }
 }
 
-const interpolators = {
+const interpolatorsOuter = {
   headset: {
     desktop: flubber.interpolate(contours.headset.outer, contours.desktop.outer, {maxSegmentLength: 10}),
     tablet: flubber.interpolate(contours.headset.outer, contours.tablet.outer, {maxSegmentLength: 10}),
@@ -39,27 +39,50 @@ const interpolators = {
     desktop: flubber.interpolate(contours.mobile.outer, contours.desktop.outer, {maxSegmentLength: 10}),
     tablet: flubber.interpolate(contours.mobile.outer, contours.tablet.outer, {maxSegmentLength: 10})
   },
-
+}
+const interpolatorsInner = {
+  headset: {
+    desktop: flubber.interpolate(contours.headset.inner, contours.desktop.inner, {maxSegmentLength: 10}),
+    tablet: flubber.interpolate(contours.headset.inner, contours.tablet.inner, {maxSegmentLength: 10}),
+    mobile: flubber.interpolate(contours.headset.inner, contours.mobile.inner, {maxSegmentLength: 10})
+  },
+  desktop: {
+    headset: flubber.interpolate(contours.desktop.inner, contours.headset.inner, {maxSegmentLength: 10}),
+    tablet: flubber.interpolate(contours.desktop.inner, contours.tablet.inner, {maxSegmentLength: 10}),
+    mobile: flubber.interpolate(contours.desktop.inner, contours.mobile.inner, {maxSegmentLength: 10})
+  },
+  tablet: {
+    headset: flubber.interpolate(contours.tablet.inner, contours.headset.inner, {maxSegmentLength: 10}),
+    desktop: flubber.interpolate(contours.tablet.inner, contours.desktop.inner, {maxSegmentLength: 10}),
+    mobile: flubber.interpolate(contours.tablet.inner, contours.mobile.inner, {maxSegmentLength: 10})
+  },
+  mobile: {
+    headset: flubber.interpolate(contours.mobile.inner, contours.headset.inner, {maxSegmentLength: 10}),
+    desktop: flubber.interpolate(contours.mobile.inner, contours.desktop.inner, {maxSegmentLength: 10}),
+    tablet: flubber.interpolate(contours.mobile.inner, contours.tablet.inner, {maxSegmentLength: 10})
+  },
 }
 
 const FPS = 30;
 let currentDevice = 'desktop';
 const getCurDevice = () => currentDevice;
-let interpolatorCurrent = null;
-const getCurInterpolator = () => interpolatorCurrent;
+let interpolatorInnerCurrent = null;
+let interpolatorOuterCurrent = null;
+const getCurInterpolator = () => interpolatorOuterCurrent;
 
 
 const outline = document.getElementById("outline");
 let outputOuter = document.getElementById("outer");
+let outputInner = document.getElementById("inner");
 
 const createButton = ({name, fps = FPS}) => {
   let btn = document.createElement("button");
   btn.innerHTML = name;
   btn.addEventListener("click", () => {
-    // handler(fps);
-    const interpolator = interpolators[currentDevice][name];
+    const interpolatorOuter = interpolatorsOuter[currentDevice][name];
+    const interpolatorInner = interpolatorsInner[currentDevice][name];
     currentDevice = name;
-    startAnimating({fps, interpolator});
+    startAnimating({fps, interpolatorOuter: interpolatorOuter, interpolatorInner: interpolatorInner});
 
     if (currentDevice === 'headset') {
       outline.style.opacity = '1';
@@ -68,11 +91,8 @@ const createButton = ({name, fps = FPS}) => {
     }
 
   })
-  document.body.appendChild(btn);
-
+  document.getElementById("buttons").appendChild(btn);
 }
-// var interpolator = flubber.interpolate(contours.headset.outer, contours.desktop.outer, {maxSegmentLength: 10});
-// var interpolator = interpolators.headset.desktop;
 
 const init = ({contours}) => {
   outputOuter.setAttribute("d", contours[currentDevice].outer);
@@ -96,18 +116,19 @@ var fpsInterval, startTime, now, then, elapsed;
 let start = null;
 let duration = 500;
 
-function startAnimating({fps, interpolator}) {
+function startAnimating({fps, interpolatorOuter, interpolatorInner}) {
   fpsInterval = 1000 / fps;
   then = window.performance.now();
   startTime = then;
-  interpolatorCurrent = interpolator;
+  interpolatorOuterCurrent = interpolatorOuter;
+  interpolatorInnerCurrent = interpolatorInner;
   start = null;
   stop = false;
   animate();
 }
 
 function animate(newtime) {
-  if (stop || !interpolatorCurrent) {
+  if (stop || !interpolatorOuterCurrent || !interpolatorInnerCurrent) {
     return;
   }
 
@@ -122,7 +143,8 @@ function animate(newtime) {
 
     if (!start) start = newtime;
     const progress = Math.min((newtime - start) / duration, 1);
-    outputOuter.setAttribute("d", interpolatorCurrent(progress));
+    outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
+    outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
     if (progress >= 1) {
       stop = true;
     }
