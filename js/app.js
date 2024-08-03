@@ -18,6 +18,12 @@ const contours = {
   }
 }
 
+const contoursSize = {width: 1920, height: 1080};
+const strokeStyle = 'rgb(155, 82, 250)';
+const lineWidth = 3;
+const FPS = 30;
+let currentDevice = 'mobile';
+
 const interpolatorsOuter = {
   headset: {
     desktop: flubber.interpolate(contours.headset.outer, contours.desktop.outer, {maxSegmentLength: 10}),
@@ -63,8 +69,6 @@ const interpolatorsInner = {
   },
 }
 
-const FPS = 30;
-let currentDevice = 'desktop';
 const getCurDevice = () => currentDevice;
 let interpolatorInnerCurrent = null;
 let interpolatorOuterCurrent = null;
@@ -74,6 +78,11 @@ const getCurInterpolator = () => interpolatorOuterCurrent;
 const outline = document.getElementById("outline");
 let outputOuter = document.getElementById("outer");
 let outputInner = document.getElementById("inner");
+
+const maskSVG = document.getElementById("mask")
+const getMaskSVG = () => maskSVG;
+const serializer = new XMLSerializer();
+const maskImage = document.createElement('img');
 
 const createButton = ({name, fps = FPS}) => {
   let btn = document.createElement("button");
@@ -95,70 +104,76 @@ const createButton = ({name, fps = FPS}) => {
 }
 
 const init = ({contours}) => {
+  outputInner.setAttribute("d", contours[currentDevice].inner);
   outputOuter.setAttribute("d", contours[currentDevice].outer);
    Object.keys(contours).forEach(name => {
      createButton({name})
    })
    outline.setAttribute("d", contours.headset.outline);
-   outline.style.opacity = '0.25';
+   outline.style.opacity = '0';
 }
 
 
 
 
 
-let lastTimestamp = 0;
+// let lastTimestamp = 0;
 
 var stop = false;
 var frameCount = 0;
 var $results = document.getElementById("results");
-var fpsInterval, startTime, now, then, elapsed;
+var startTime, now, then, elapsed;
 let start = null;
 let duration = 500;
+const  fpsInterval = 1000 / FPS;
 
 function startAnimating({fps, interpolatorOuter, interpolatorInner}) {
-  fpsInterval = 1000 / fps;
   then = window.performance.now();
   startTime = then;
   interpolatorOuterCurrent = interpolatorOuter;
   interpolatorInnerCurrent = interpolatorInner;
   start = null;
   stop = false;
-  animate();
+  // animate();
 }
 
-function animate(newtime) {
-  if (stop || !interpolatorOuterCurrent || !interpolatorInnerCurrent) {
-    return;
-  }
-
-  requestAnimationFrame(animate);
-
-  now = newtime;
-  elapsed = now - then;
-
-  if (elapsed > fpsInterval) {
-
-    then = now - (elapsed % fpsInterval);
-
-    if (!start) start = newtime;
-    const progress = Math.min((newtime - start) / duration, 1);
-    outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
-    outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
-    if (progress >= 1) {
-      stop = true;
-    }
-
-    // TESTING...Report #seconds since start and achieved fps.
-    var sinceStart = now - startTime;
-    var currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
-    $results.innerHTML = "Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.";
-
-  }
-}
+// function animate(newtime) {
+//   if (stop || !interpolatorOuterCurrent || !interpolatorInnerCurrent) {
+//     return;
+//   }
+//
+//   requestAnimationFrame(animate);
+//
+//   now = newtime;
+//   elapsed = now - then;
+//
+//   if (elapsed > fpsInterval) {
+//
+//     then = now - (elapsed % fpsInterval);
+//
+//     if (!start) start = newtime;
+//     const progress = Math.min((newtime - start) / duration, 1);
+//     outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
+//     outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
+//     if (progress >= 1) {
+//       stop = true;
+//     }
+//
+//     // TESTING...Report #seconds since start and achieved fps.
+//     var sinceStart = now - startTime;
+//     var currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
+//     $results.innerHTML = "Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.";
+//
+//   }
+// }
 
 async function main() {
-  const canvas = document.querySelector('canvas');
+  const parent = document.getElementById("outputWrapper");
+  const canvas = document.getElementById('theCanvas');
+  // canvas.width = "1920";
+  // canvas.height = "1080";
+  canvas.width = parent.offsetWidth;
+  canvas.height = parent.offsetHeight;
   const canvasContext = canvas.getContext('2d');
   const canvasAspectRatio = canvas.width / canvas.height;
 
@@ -169,21 +184,7 @@ async function main() {
   video.playsinline = true;
   video.src = "img/video.webm";
 
-  const maskSVG = document.getElementById("mask")
-  const maskImage = document.createElement('img');
-  const XML = new XMLSerializer().serializeToString(maskSVG);
-
-  const SVG64 = btoa(XML);
-
-
-  maskImage.src = URL.createObjectURL(new Blob([XML], {type: 'image/svg+xml'}));
-
-
-
-  // maskImage.src = URL.createObjectURL(new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432"><path fill="#fff" d="M364 318l35 4-21-29-24-2-4-2 19-5a4 4 0 00-2-9l-27 7-33-19 7-2 24 14a4 4 0 104-7l-16-10 4-1 24 4 28-22-35-6-20 16-3 1 9-17a4 4 0 10-7-4l-14 24-16 4-64-37h33l20 20a4 4 0 106-6l-14-14h4l23 10 32-14-32-14-23 10h-4l14-14a4 4 0 10-6-6l-20 20h-33l64-37 16 4 14 24a4 4 0 107-4l-9-17 3 1 20 16 35-6-28-22-24 4-4-1 16-10a4 4 0 00-4-7l-24 13-7-1 33-19 27 7a4 4 0 102-9l-19-5 4-2 24-2 21-29-35 4-15 20-3 2 5-18a4 4 0 10-8-3l-8 27-32 19 1-7 24-14a4 4 0 00-4-8l-16 10 1-4 15-19-5-35-23 28 4 24-1 4-9-17a4 4 0 10-8 5l14 24-4 15-64 37 16-28 27-7a4 4 0 00-2-9l-19 5 2-3 20-15 4-35-29 21-2 24-2 4-5-19a4 4 0 10-8 3l7 26-17 29v-74l12-12h27a4 4 0 000-8h-19l3-3 23-9 13-33-33 13-9 23-3 3V81a4 4 0 10-8 0v27l-6 6V76l20-20a4 4 0 10-6-6l-14 13v-4l10-22-14-33-14 33 10 22v4l-14-13a4 4 0 10-6 6l20 20v38l-6-6V81a4 4 0 00-8 0v19l-3-3-9-23-33-13 13 33 23 9 3 3h-19a4 4 0 000 8h27l12 12v74l-17-29 7-26a4 4 0 00-8-3l-5 19-2-4-2-24-29-21 4 35 20 15 2 3-19-5a4 4 0 10-2 9l27 7 16 28-64-37-4-15 14-24a4 4 0 00-8-5l-9 17-1-4 4-24-23-28-5 35 15 19 1 4-16-10a4 4 0 10-4 8l24 14 1 7-32-19-8-27a4 4 0 10-8 3l5 18-3-2-15-20-35-4 21 29 24 2 4 2-19 5a4 4 0 002 9l27-7 33 19-7 1-24-13a4 4 0 10-4 7l16 10-4 1-24-4-28 22 35 6 20-16 3-1-9 17a4 4 0 107 4l14-24 16-4 64 37h-33l-20-20a4 4 0 10-6 6l14 14h-4l-23-10-32 14 32 14 23-10h4l-14 14a4 4 0 106 6l20-20h33l-64 37-16-4-14-24a4 4 0 00-7 4l9 17-3-1-20-16-35 6 28 22 24-4 4 1-16 10a4 4 0 004 7l24-14 7 2-33 19-27-7a4 4 0 00-2 9l19 5-4 2-24 2-21 29 35-4 15-20 3-2-5 18a4 4 0 008 3l8-27 32-19-1 7-24 14a4 4 0 004 8l16-10-1 4-15 19 5 35 23-28-4-24 1-4 9 17a4 4 0 008-5l-14-24 4-15 64-37-16 28-27 7a4 4 0 102 9l19-5-2 3-20 15-4 35 29-21 2-24 2-4 5 19a4 4 0 108-3l-7-26 17-29v74l-12 12h-27a4 4 0 100 8h19l-3 3-23 9-13 33 33-13 9-23 3-3v19a4 4 0 008 0v-27l6-6v38l-20 20a4 4 0 006 6l14-13v4l-10 22 14 33 14-33-10-22v-4l14 13a4 4 0 006-6l-20-20v-38l6 6v27a4 4 0 008 0v-19l3 3 9 23 33 13-13-33-23-9-3-3h19a4 4 0 000-8h-27l-12-12v-74l17 29-7 26a4 4 0 008 3l5-19 2 4 2 24 29 21-4-35-20-15-2-3 19 5a4 4 0 102-9l-27-7-16-28 64 37 4 15-14 24a4 4 0 108 5l9-17 1 4-4 24 23 28 5-35-15-19-1-4 16 10a4 4 0 004-8l-24-14-1-7 32 19 8 27a4 4 0 108-3l-5-18 3 2 15 20z"/></svg>`], {type: 'image/svg+xml'}));
-  //
-  // console.log(' maskSVG=',  typeof maskSVG, maskSVG)
-  // console.log('maskImage=', typeof maskImage, maskImage)
+  maskImage.src = URL.createObjectURL(new Blob([serializer.serializeToString(getMaskSVG())], {type: 'image/svg+xml'}));
 
   await Promise.all([
     video.play(),
@@ -208,16 +209,47 @@ async function main() {
 
   const [maskTop, maskLeft] = [(canvas.height - maskHeight) / 2, (canvas.width - maskWidth) / 2];
 
-  requestAnimationFrame(function frame() {
+  const maskScale = Math.min(canvas.width / (contoursSize.width+3), canvas.height / (contoursSize.height+3));
+  canvasContext.strokeStyle = strokeStyle;
+  canvasContext.lineWidth = lineWidth;
+
+  requestAnimationFrame(function frame(newtime) {
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
     canvasContext.globalCompositeOperation = 'destination-over';
-    canvasContext.drawImage(maskImage, maskLeft, maskTop, maskWidth, maskHeight);
+    now = newtime;
+    elapsed = now - then;
+
+      if (!start) start = newtime;
+      const progress = Math.min((newtime - start) / duration, 1);
+    if (elapsed > fpsInterval) {
+      then = now - (elapsed % fpsInterval);
+      outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
+      // outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
+      if (progress >= 1) {
+        stop = true;
+      }
+    }
+
+    const path = (interpolatorInnerCurrent)
+      ? new Path2D(interpolatorInnerCurrent(progress))
+      : new Path2D(contours[currentDevice].inner);
+
+    canvasContext.setTransform(maskScale, 0, 0, maskScale, lineWidth * maskScale, lineWidth * maskScale); // Reset current transformation matrix to the identity matrix
+    canvasContext.fill(path);
+    canvasContext.setTransform(1, 0, 0, 1, 0, 0); // Reset current transformation matrix to the identity matrix
 
     canvasContext.globalCompositeOperation = 'source-in';
     canvasContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, frameLeft, frameTop, frameWidth, frameHeight);
+
+    /** draw inner outline  */
+    canvasContext.globalCompositeOperation = 'source-over';
+    canvasContext.setTransform(maskScale, 0, 0, maskScale, lineWidth * maskScale, lineWidth * maskScale); // Reset current transformation matrix to the identity matrix
+    canvasContext.stroke(path)
+    canvasContext.setTransform(1, 0, 0, 1, 0, 0); // Reset current transformation matrix to the identity matrix
 
     requestAnimationFrame(frame);
   });
 }
 
 init({contours})
-setTimeout(() => main(), 1200)
+setTimeout(() => main(), 600)

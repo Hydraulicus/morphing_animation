@@ -15,28 +15,49 @@
       height: 100%;
     }
 
+    #outputWrapper {
+      width: 100vw;
+      aspect-ratio: 1920 / 1080;
+      position: relative;
+    }
+
     svg {
+      width: 100%;
+      aspect-ratio: 1920 / 1080;
       stroke: rgb(155, 82, 250);
       stroke-width: 3px;
       fill: none;
 
+      path:nth-of-type(2) {
+        stroke-width: 0;
+        /*stroke: darkred;*/
+      }
       path:nth-of-type(3) {
         stroke-width: 1px;
       }
+    }
+
+    #theCanvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      /*width: 100%;*/
+      /*height: 100%;*/
     }
 
   </style>
 </head>
 <body>
 
-<p id="results">Results:</p>
 <div id="buttons"></div>
-<canvas width="960" height="540"></canvas>
-<svg id="mask" viewbox="0 0 1920 1080" preserveAspectRatio="none" class="source-svg absolute">
-  <path id="outer" d="M1686.3,191.8"></path>
-  <path id="inner" d="M1686.3,191.8"></path>
-  <path id="outline" d="M1686.3,191.8"></path>
-</svg>
+<div id="outputWrapper">
+  <svg id="mask" viewbox="0 0 1920 1080" preserveAspectRatio="none" class="source-svg absolute">
+    <path id="outer" d="M0,0"></path>
+    <path id="inner" d="M0,0"></path>
+    <path id="outline" d="M0,0"></path>
+  </svg>
+  <canvas id="theCanvas"></canvas>
+</div>
 </body>
 <script src="https://unpkg.com/flubber@0.3.0"></script>
 <script src="js/app.js"></script>
