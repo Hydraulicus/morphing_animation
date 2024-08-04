@@ -70,11 +70,13 @@ const interpolatorsInner = {
   },
 }
 
-const getCurDevice = () => currentDevice;
 let interpolatorInnerCurrent = null;
 let interpolatorOuterCurrent = null;
-const getCurInterpolator = () => interpolatorOuterCurrent;
 
+const ua = window.navigator.userAgent;
+const iOS = ua.match(/Macintosh/i) || ua.match(/iPad/i) || ua.match(/iPhone/i);
+const webkit = ua.match(/WebKit/i);
+const iOSSafari = iOS && webkit && !ua.match(/CriOS/i) && !ua.match(/EdgiOS/i) && !ua.match(/Chrome/i) && !ua.match(/Edg/i);
 
 const outline = document.getElementById("outline");
 let outputOuter = document.getElementById("outer");
@@ -114,39 +116,50 @@ let videoAspectRatio;
 const init = async ({contours}) => {
   outputInner.setAttribute("d", contours[currentDevice].inner);
   outputOuter.setAttribute("d", contours[currentDevice].outer);
-   Object.keys(contours).forEach(name => {
-     createButton({name})
-   })
+  Object.keys(contours).forEach(name => {
+    createButton({name})
+  })
   if (currentDevice) {
     document.getElementById(currentDevice).classList.add('active');
   }
-   outline.setAttribute("d", contours.headset.outline);
+  outline.setAttribute("d", contours.headset.outline);
 
   video = document.createElement('video');
   video.muted = true;
   video.autoplay = true;
   video.loop = true;
   video.playsinline = true;
+  video.poster = "img/background.jpg";
 
-  //TODO add the both video files
-  video.src = "img/video.webm";
+  const source1 = document.createElement("source");
+  source1.setAttribute("src",
+    "img/video.webm");
+  source1.setAttribute("type", "video/webm");
+  video.appendChild(source1);
 
-  maskImage.src = URL.createObjectURL(new Blob([serializer.serializeToString(getMaskSVG())], {type: 'image/svg+xml'}));
+  const source2 = document.createElement("source");
+  source2.setAttribute("src",
+    "img/video.mp4");
+  source2.setAttribute("type", "video/mp4");
+  video.appendChild(source2);
 
-  await Promise.all([
-    video.play(),
-    new Promise((resolve) => maskImage.addEventListener('load', resolve, {once: true})),
-  ]);
+  if (!iOSSafari) {
+    maskImage.src = URL.createObjectURL(new Blob([serializer.serializeToString(getMaskSVG())], {type: 'image/svg+xml'}));
+    await Promise.all([
+      video.play(),
+      new Promise((resolve) => maskImage.addEventListener('load', resolve, {once: true})),
+    ]);
+  }
 
   videoAspectRatio = video.videoWidth / video.videoHeight;
 
-   return new Promise((resolve) => resolve());
+  return new Promise((resolve) => resolve());
 }
 
 let stop = false;
 let startTime, now, then, elapsed;
 let start = null;
-const  fpsInterval = 1000 / FPS;
+const fpsInterval = 1000 / FPS;
 let requestAnimationFramePointer;
 
 function startAnimating({fps, interpolatorOuter, interpolatorInner}) {
@@ -182,7 +195,7 @@ function main() {
 
   const [maskTop, maskLeft] = [(canvas.height - maskHeight) / 2, (canvas.width - maskWidth) / 2];
 
-  const maskScale = Math.min(canvas.width / (contoursSize.width+3), canvas.height / (contoursSize.height+3));
+  const maskScale = Math.min(canvas.width / (contoursSize.width + 3), canvas.height / (contoursSize.height + 3));
   canvasContext.strokeStyle = strokeStyle;
   canvasContext.lineWidth = lineWidth;
 
@@ -192,11 +205,12 @@ function main() {
     now = newtime;
     elapsed = now - then;
 
-      if (!start) start = newtime;
-      const progress = Math.min((newtime - start) / duration, 1);
+    if (!start) start = newtime;
+    const progress = Math.min((newtime - start) / duration, 1);
     if (elapsed > fpsInterval) {
       then = now - (elapsed % fpsInterval);
       outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
+      outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
       if (progress >= 1) {
         stop = true;
       }
@@ -206,12 +220,13 @@ function main() {
       ? new Path2D(interpolatorInnerCurrent(progress))
       : new Path2D(contours[currentDevice].inner);
 
-    canvasContext.setTransform(maskScale, 0, 0, maskScale, lineWidth * maskScale, lineWidth * maskScale); // Reset current transformation matrix to the identity matrix
-    canvasContext.fill(path);
-    canvasContext.setTransform(1, 0, 0, 1, 0, 0); // Reset current transformation matrix to the identity matrix
-
-    canvasContext.globalCompositeOperation = 'source-in';
-    canvasContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, frameLeft, frameTop, frameWidth, frameHeight);
+    if (!iOSSafari) {
+      canvasContext.setTransform(maskScale, 0, 0, maskScale, lineWidth * maskScale, lineWidth * maskScale); // Reset current transformation matrix to the identity matrix
+      canvasContext.fill(path);
+      canvasContext.setTransform(1, 0, 0, 1, 0, 0); // Reset current transformation matrix to the identity matrix
+      canvasContext.globalCompositeOperation = 'source-in';
+      canvasContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, frameLeft, frameTop, frameWidth, frameHeight);
+    }
 
     /** draw inner outline  */
     canvasContext.globalCompositeOperation = 'source-over';
@@ -223,7 +238,7 @@ function main() {
   });
 }
 
-window.addEventListener('resize', function(event) {
+window.addEventListener('resize', function (event) {
   cancelAnimationFrame(requestAnimationFramePointer);
   main();
 });

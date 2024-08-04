@@ -15,8 +15,13 @@
 
 <div id="outputWrapper">
   <svg id="mask" viewbox="0 0 1920 1080" preserveAspectRatio="none" class="source-svg absolute">
+    <defs>
+      <pattern id="innerPlaceholder" patternUnits="userSpaceOnUse" width="1920" height="1080">
+        <image href="img/background.jpg" x="0" y="0" width="1920" height="1080" />
+      </pattern>
+    </defs>
     <path id="outer" d="M0,0"></path>
-    <path id="inner" d="M0,0"></path>
+    <path id="inner" d="M0,0" fill="url(#innerPlaceholder)"></path>
     <path id="outline" d="M0,0"></path>
   </svg>
   <canvas id="theCanvas"></canvas>
