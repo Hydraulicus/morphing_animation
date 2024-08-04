@@ -22,6 +22,7 @@ const contoursSize = {width: 1920, height: 1080};
 const strokeStyle = 'rgb(155, 82, 250)';
 const lineWidth = 3;
 const FPS = 30;
+const duration = 500;
 let currentDevice = 'headset';
 
 const interpolatorsOuter = {
@@ -100,13 +101,15 @@ const createButton = ({name, fps = FPS}) => {
       outline.style.opacity = '1';
       outline.style.transform = 'scale(1)';
     } else {
-      console.log(' hide outline ')
       outline.style.opacity = '0';
       outline.style.transform = 'scale(1.2)';
       outline.style.transformOrigin = '50% 50%';
     }
   })
 }
+
+let video;
+let videoAspectRatio;
 
 const init = async ({contours}) => {
   outputInner.setAttribute("d", contours[currentDevice].inner);
@@ -118,18 +121,33 @@ const init = async ({contours}) => {
     document.getElementById(currentDevice).classList.add('active');
   }
    outline.setAttribute("d", contours.headset.outline);
+
+  video = document.createElement('video');
+  video.muted = true;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsinline = true;
+
+  //TODO add the both video files
+  video.src = "img/video.webm";
+
+  maskImage.src = URL.createObjectURL(new Blob([serializer.serializeToString(getMaskSVG())], {type: 'image/svg+xml'}));
+
+  await Promise.all([
+    video.play(),
+    new Promise((resolve) => maskImage.addEventListener('load', resolve, {once: true})),
+  ]);
+
+  videoAspectRatio = video.videoWidth / video.videoHeight;
+
    return new Promise((resolve) => resolve());
 }
 
-
-
-var stop = false;
-var frameCount = 0;
-var $results = document.getElementById("results");
-var startTime, now, then, elapsed;
+let stop = false;
+let startTime, now, then, elapsed;
 let start = null;
-let duration = 500;
 const  fpsInterval = 1000 / FPS;
+let requestAnimationFramePointer;
 
 function startAnimating({fps, interpolatorOuter, interpolatorInner}) {
   then = window.performance.now();
@@ -140,29 +158,13 @@ function startAnimating({fps, interpolatorOuter, interpolatorInner}) {
   stop = false;
 }
 
-async function main() {
+function main() {
   const parent = document.getElementById("outputWrapper");
   const canvas = document.getElementById('theCanvas');
   canvas.width = parent.offsetWidth;
   canvas.height = parent.offsetHeight;
   const canvasContext = canvas.getContext('2d');
   const canvasAspectRatio = canvas.width / canvas.height;
-
-  const video = document.createElement('video');
-  video.muted = true;
-  video.autoplay = true;
-  video.loop = true;
-  video.playsinline = true;
-  video.src = "img/video.webm";
-
-  maskImage.src = URL.createObjectURL(new Blob([serializer.serializeToString(getMaskSVG())], {type: 'image/svg+xml'}));
-
-  await Promise.all([
-    video.play(),
-    new Promise((resolve) => maskImage.addEventListener('load', resolve, {once: true})),
-  ]);
-
-  const videoAspectRatio = video.videoWidth / video.videoHeight;
 
   const [frameWidth, frameHeight] =
     canvasAspectRatio <= videoAspectRatio
@@ -184,7 +186,7 @@ async function main() {
   canvasContext.strokeStyle = strokeStyle;
   canvasContext.lineWidth = lineWidth;
 
-  requestAnimationFrame(function frame(newtime) {
+  requestAnimationFramePointer = requestAnimationFrame(function frame(newtime) {
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
     canvasContext.globalCompositeOperation = 'destination-over';
     now = newtime;
@@ -217,8 +219,13 @@ async function main() {
     canvasContext.stroke(path)
     canvasContext.setTransform(1, 0, 0, 1, 0, 0); // Reset current transformation matrix to the identity matrix
 
-    requestAnimationFrame(frame);
+    requestAnimationFramePointer = requestAnimationFrame(frame);
   });
 }
+
+window.addEventListener('resize', function(event) {
+  cancelAnimationFrame(requestAnimationFramePointer);
+  main();
+});
 
 init({contours}).then(main)
