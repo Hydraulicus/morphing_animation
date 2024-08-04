@@ -192,7 +192,6 @@ async function main() {
     if (elapsed > fpsInterval) {
       then = now - (elapsed % fpsInterval);
       outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
-      // outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
       if (progress >= 1) {
         stop = true;
       }

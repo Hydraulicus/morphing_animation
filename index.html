@@ -10,47 +10,9 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.png">
-  <style>
-    html, body {
-      height: 100%;
-    }
-
-    #outputWrapper {
-      width: 66vw;
-      aspect-ratio: 1920 / 1080;
-      position: relative;
-    }
-
-    svg {
-      width: 100%;
-      aspect-ratio: 1920 / 1080;
-      stroke: rgb(155, 82, 250);
-      stroke-width: 3px;
-      fill: none;
-
-      path:nth-of-type(2) {
-        stroke-width: 0;
-      }
-      path:nth-of-type(3) {
-        stroke-width: 1px;
-        transition: opacity 0.5s ease-out, transform 0.5s ease-in;
-        opacity: 1;
-      }
-    }
-
-    #theCanvas {
-      position: absolute;
-      left: 0;
-      top: 0;
-      /*width: 100%;*/
-      /*height: 100%;*/
-    }
-
-  </style>
 </head>
 <body>
 
-<div id="buttons"></div>
 <div id="outputWrapper">
   <svg id="mask" viewbox="0 0 1920 1080" preserveAspectRatio="none" class="source-svg absolute">
     <path id="outer" d="M0,0"></path>
@@ -59,6 +21,54 @@
   </svg>
   <canvas id="theCanvas"></canvas>
 </div>
+<div class="video-footer">
+  <div class="grid-2col">
+    <div class="video_nav-heading text-wrap-balance">The multi-device XR platform for experiencing unbuilt property</div>
+    <div id="w-node-_5d6f5267-94c5-7836-6cce-02c05f2b7ab7-2d0ab335" class="video-nav">
+      <div id="headset" class="button video-nav-button">
+        <div class="button-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 18">
+            <path
+              d="M12.5,13.17l-1.67-1.67h-1.67l-1.67,1.67h-1.67c-.44,0-.87-.18-1.18-.49-.31-.31-.49-.74-.49-1.18v-5c0-.44.18-.87.49-1.18.31-.31.74-.49,1.18-.49h8.33c.44,0,.87.18,1.18.49.31.31.49.74.49,1.18v5c0,.44-.18.87-.49,1.18-.31.31-.74.49-1.18.49h-1.67ZM18.33,10.67c0,.22-.09.43-.24.59-.16.16-.37.24-.59.24s-.43-.09-.59-.24c-.16-.16-.24-.37-.24-.59v-3.33c0-.22.09-.43.24-.59s.37-.24.59-.24.43.09.59.24c.16.16.24.37.24.59v3.33ZM3.33,10.67c0,.22-.09.43-.24.59-.16.16-.37.24-.59.24s-.43-.09-.59-.24c-.16-.16-.24-.37-.24-.59v-3.33c0-.22.09-.43.24-.59s.37-.24.59-.24.43.09.59.24c.16.16.24.37.24.59v3.33Z"
+              fill="currentcolor"></path>
+          </svg>
+        </div>
+        <div class="select-none">Headset</div>
+      </div>
+      <div id="tablet" class="button video-nav-button">
+        <div class="button-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 18">
+            <path
+              d="M18.33,4.83c0-.92-.75-1.67-1.67-1.67H3.33c-.92,0-1.67.75-1.67,1.67v8.33c0,.92.75,1.67,1.67,1.67h13.33c.92,0,1.67-.75,1.67-1.67V4.83ZM14.17,9c0-.22.09-.43.24-.59s.37-.24.59-.24.43.09.59.24c.16.16.24.37.24.59s-.09.43-.24.59c-.16.16-.37.24-.59.24s-.43-.09-.59-.24c-.16-.16-.24-.37-.24-.59Z"
+              fill="currentcolor"></path>
+          </svg>
+        </div>
+        <div class="select-none">Tablet</div>
+      </div>
+      <div id="desktop" class="button video-nav-button">
+        <div class="button-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 18">
+            <path
+              d="M3.5,13.5c-.41,0-.77-.15-1.06-.44-.29-.29-.44-.65-.44-1.06V3.5c0-.41.15-.77.44-1.06.29-.29.65-.44,1.06-.44h13c.41,0,.77.15,1.06.44.29.29.44.65.44,1.06v8.5c0,.41-.15.77-.44,1.06-.29.29-.65.44-1.06.44H3.5ZM1.75,16c-.41,0-.75-.34-.75-.75s.34-.75.75-.75h16.5c.41,0,.75.34.75.75s-.34.75-.75.75H1.75Z"
+              fill="currentcolor"></path>
+          </svg>
+        </div>
+        <div class="select-none">Browser</div>
+      </div>
+      <div id="mobile" class="button video-nav-button">
+        <div class="button-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 20 18">
+            <path
+              d="M14.16,17.33c.92,0,1.67-.75,1.67-1.67V2.33c0-.92-.75-1.67-1.67-1.67H5.84c-.92,0-1.67.75-1.67,1.67v13.33c0,.92.75,1.67,1.67,1.67h8.33ZM9.99,13.17c.22,0,.44.09.59.24.16.16.25.37.25.59s-.09.43-.25.59c-.15.16-.37.24-.59.24s-.43-.09-.59-.24c-.15-.16-.24-.37-.24-.59s.09-.43.24-.59c.16-.16.37-.24.59-.24Z"
+              fill="currentcolor"></path>
+          </svg>
+        </div>
+        <div class="select-none">Mobile</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="buttons"></div>
 </body>
 <script src="https://unpkg.com/flubber@0.3.0"></script>
 <script src="js/app.js"></script>
