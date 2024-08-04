@@ -85,13 +85,14 @@ const serializer = new XMLSerializer();
 const maskImage = document.createElement('img');
 
 const createButton = ({name, fps = FPS}) => {
-  let btn = document.createElement("button");
-  btn.innerHTML = name;
+  let btn = document.getElementById(name);
   btn.addEventListener("click", () => {
     const interpolatorOuter = interpolatorsOuter[currentDevice][name];
     const interpolatorInner = interpolatorsInner[currentDevice][name];
     if (name !== currentDevice) {
+      document.getElementById(currentDevice).classList.remove('active');
       currentDevice = name;
+      btn.classList.add('active');
       startAnimating({fps, interpolatorOuter: interpolatorOuter, interpolatorInner: interpolatorInner});
     }
 
@@ -105,7 +106,6 @@ const createButton = ({name, fps = FPS}) => {
       outline.style.transformOrigin = '50% 50%';
     }
   })
-  document.getElementById("buttons").appendChild(btn);
 }
 
 const init = async ({contours}) => {
@@ -114,6 +114,9 @@ const init = async ({contours}) => {
    Object.keys(contours).forEach(name => {
      createButton({name})
    })
+  if (currentDevice) {
+    document.getElementById(currentDevice).classList.add('active');
+  }
    outline.setAttribute("d", contours.headset.outline);
    return new Promise((resolve) => resolve());
 }

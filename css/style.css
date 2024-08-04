@@ -20,7 +20,7 @@ html, body {
 
     path:nth-of-type(3) {
       stroke-width: 1px;
-      transition: opacity 0.5s ease-out, transform 0.5s ease-in;
+      transition: opacity 0.5s ease-in, transform 0.5s ease-in;
       opacity: 1;
     }
   }
@@ -30,8 +30,6 @@ html, body {
   position: absolute;
   left: 0;
   top: 0;
-  /*width: 100%;*/
-  /*height: 100%;*/
 }
 
 .video-footer {
@@ -62,13 +60,27 @@ html, body {
 
 .button {
   text-align: center;
-  padding: .875rem 1rem;
+  padding: .5rem 1rem;
   font-family: Satoshi,sans-serif;
   font-weight: 700;
   line-height: 1.6;
   text-decoration: none;
   display: flex;
+  cursor: pointer;
+  border-radius: 5px;
+  height: 1.5rem;
+  margin-left: 1rem;
 }
+.button:not(.active):hover {
+  background-color: #6332a4;
+  color: white;
+}
+
+.active {
+  background: #201e4e;
+  color: white;
+}
+
 .button-icon {
   object-fit: fill;
   align-self: auto;
