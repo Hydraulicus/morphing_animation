@@ -22,7 +22,7 @@ const contoursSize = {width: 1920, height: 1080};
 const strokeStyle = 'rgb(155, 82, 250)';
 const lineWidth = 3;
 const FPS = 30;
-let currentDevice = 'mobile';
+let currentDevice = 'headset';
 
 const interpolatorsOuter = {
   headset: {
@@ -90,34 +90,35 @@ const createButton = ({name, fps = FPS}) => {
   btn.addEventListener("click", () => {
     const interpolatorOuter = interpolatorsOuter[currentDevice][name];
     const interpolatorInner = interpolatorsInner[currentDevice][name];
-    currentDevice = name;
-    startAnimating({fps, interpolatorOuter: interpolatorOuter, interpolatorInner: interpolatorInner});
+    if (name !== currentDevice) {
+      currentDevice = name;
+      startAnimating({fps, interpolatorOuter: interpolatorOuter, interpolatorInner: interpolatorInner});
+    }
 
     if (currentDevice === 'headset') {
       outline.style.opacity = '1';
+      outline.style.transform = 'scale(1)';
     } else {
+      console.log(' hide outline ')
       outline.style.opacity = '0';
+      outline.style.transform = 'scale(1.2)';
+      outline.style.transformOrigin = '50% 50%';
     }
-
   })
   document.getElementById("buttons").appendChild(btn);
 }
 
-const init = ({contours}) => {
+const init = async ({contours}) => {
   outputInner.setAttribute("d", contours[currentDevice].inner);
   outputOuter.setAttribute("d", contours[currentDevice].outer);
    Object.keys(contours).forEach(name => {
      createButton({name})
    })
    outline.setAttribute("d", contours.headset.outline);
-   outline.style.opacity = '0';
+   return new Promise((resolve) => resolve());
 }
 
 
-
-
-
-// let lastTimestamp = 0;
 
 var stop = false;
 var frameCount = 0;
@@ -134,44 +135,11 @@ function startAnimating({fps, interpolatorOuter, interpolatorInner}) {
   interpolatorInnerCurrent = interpolatorInner;
   start = null;
   stop = false;
-  // animate();
 }
-
-// function animate(newtime) {
-//   if (stop || !interpolatorOuterCurrent || !interpolatorInnerCurrent) {
-//     return;
-//   }
-//
-//   requestAnimationFrame(animate);
-//
-//   now = newtime;
-//   elapsed = now - then;
-//
-//   if (elapsed > fpsInterval) {
-//
-//     then = now - (elapsed % fpsInterval);
-//
-//     if (!start) start = newtime;
-//     const progress = Math.min((newtime - start) / duration, 1);
-//     outputOuter.setAttribute("d", interpolatorOuterCurrent(progress));
-//     outputInner.setAttribute("d", interpolatorInnerCurrent(progress));
-//     if (progress >= 1) {
-//       stop = true;
-//     }
-//
-//     // TESTING...Report #seconds since start and achieved fps.
-//     var sinceStart = now - startTime;
-//     var currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
-//     $results.innerHTML = "Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.";
-//
-//   }
-// }
 
 async function main() {
   const parent = document.getElementById("outputWrapper");
   const canvas = document.getElementById('theCanvas');
-  // canvas.width = "1920";
-  // canvas.height = "1080";
   canvas.width = parent.offsetWidth;
   canvas.height = parent.offsetHeight;
   const canvasContext = canvas.getContext('2d');
@@ -251,5 +219,4 @@ async function main() {
   });
 }
 
-init({contours})
-setTimeout(() => main(), 600)
+init({contours}).then(main)
